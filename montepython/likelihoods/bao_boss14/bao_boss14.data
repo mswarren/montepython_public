@@ -1,0 +1,5 @@
+# BAO data
+bao_boss14.data_directory      = data.path['data']
+bao_boss14.file                = 'bao_2014.txt'
+bao_boss14.rs_rescale          = 1.
+bao_boss14.exclude             = []
