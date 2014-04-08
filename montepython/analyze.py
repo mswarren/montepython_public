@@ -279,6 +279,8 @@ def analyze(command_line):
     # imported in a tex document.
     write_tex(info, indices)
 
+    write_dict(info, indices)
+
 
 def prepare(info, files, is_main_chain=True):
     """
@@ -411,16 +413,20 @@ def prepare(info, files, is_main_chain=True):
     # If the folder has no subdirectory, then go for a simple infoname,
     # otherwise, call it with the last name
     if len(folder.split('/')) <= 2 and folder.split('/')[-1] == '':
+        tag = folder.rstrip('/')
         v_infoname = folder+folder.rstrip('/')+'.v_info'
         h_infoname = folder+folder.rstrip('/')+'.h_info'
         texname = folder+folder.rstrip('/')+'.tex'
+        dictname = folder+folder.rstrip('/')+'.py'
         covname = folder+folder.rstrip('/')+'.covmat'
         logname = folder+folder.rstrip('/')+'.log'
         bfname = folder+folder.rstrip('/')+'.bestfit'
     else:
+        tag = folder.split('/')[-2]
         v_infoname = folder+folder.split('/')[-2]+'.v_info'
         h_infoname = folder+folder.split('/')[-2]+'.h_info'
         texname = folder+folder.split('/')[-2]+'.tex'
+        dictname = folder+folder.split('/')[-2]+'.dict'
         covname = folder+folder.split('/')[-2]+'.covmat'
         logname = folder+folder.split('/')[-2]+'.log'
         bfname = folder+folder.split('/')[-2]+'.bestfit'
@@ -431,10 +437,12 @@ def prepare(info, files, is_main_chain=True):
         info.v_info = open(v_infoname, 'w')
         info.h_info = open(h_infoname, 'w')
         info.tex = open(texname, 'w')
+        info.dict = open(dictname, 'w')
         info.cov = open(covname, 'w')
         info.log = open(logname, 'w')
         info.best_fit = open(bfname, 'w')
         info.param = param
+        info.tag = tag
 
         info.files = files
         info.folder = folder
@@ -1407,6 +1415,50 @@ def write_tex(info, indices):
     #info.tex.write("\\end{tabular}\n")
     #info.tex.write("\\end{document}")
 
+def write_dict(info, indices):
+    """
+    Write a python dict containing the main results
+
+    """
+
+    info.dict.write("\n%s_mean = {\n" % info.tag)
+
+    for i in indices:
+        name = info.ref_names[i]
+        val = info.mean[i]
+        if name == "omega_b":
+            val /= 100.0
+        if name == "A_s": 
+            val /= 1e9
+        info.dict.write("\t\"%s\" : %.6g,\n" % (name, val))
+    info.dict.write("}\n")
+    
+    info.dict.write("\n%s_best = {\n" % info.tag)
+
+    for i in indices:
+        name = info.ref_names[i]
+        val = info.bestfit[i]
+        if name == "omega_b":
+            val /= 100.0
+        if name == "A_s": 
+            val /= 1e9
+        info.dict.write("\t\"%s\" : %.6g,\n" % (name, val))
+
+    info.dict.write("\n\t\"lnL\" : %.6g,\n" % -info.max_lkl)
+    info.dict.write("\t\"chi2\" : %.4g,\n" % (info.max_lkl*2))
+    info.dict.write("}\n")
+
+    info.dict.write("\n%s_err = {\n" % info.tag)
+
+    for i in indices:
+        name = info.ref_names[i]
+        sig = -0.5 * info.bounds[:, 0, 0][i] + 0.5 * info.bounds[:, 0, 1][i]
+        if name == "omega_b":
+            sig /= 100.0
+        if name == "A_s": 
+            sig /= 1e9
+        info.dict.write("\t\"%s_1sigma\" : %.3g,\n" % (name, sig))
+    info.dict.write("}\n")
 
 def cubic_interpolation(info, hist, bincenters):
     """
