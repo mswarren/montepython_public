@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 # Module to handle warnings from matplotlib
 import warnings
 import io_mp
+import copy
 
 
 def analyze(command_line):
@@ -69,7 +70,7 @@ def analyze(command_line):
     # names, and number of paramaters plotted (can be let empty, all will
     # then be plotted).
     if command_line.optional_plot_file is not None:
-        for line in open(command_line.optional_plot_file[0], 'r'):
+        for line in open(command_line.optional_plot_file, 'r'):
             exec(line)
 
     # Prepare the files, according to the case, load the log.param, and
@@ -388,7 +389,8 @@ def prepare(info, files, is_main_chain=True):
     # Remove too small files to potentially eliminate any problems of
     # chains being too short, and sub-folders (as the ./plots/ one that
     # will be created after the first run anyway
-    for elem in np.copy(files):
+    #for elem in np.copy(files):
+    for elem in copy.deepcopy(files):
         if os.path.isdir('{0}'.format(elem)) is True:
             files.remove(elem)
         # Note, this limit with the size is taylored for not too huge

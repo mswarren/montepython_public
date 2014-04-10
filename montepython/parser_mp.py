@@ -364,7 +364,7 @@ def create_parser():
                             help='remove the mean likelihood plot',
                             dest='mean_likelihood', action='store_false',)
     # -- possible comparison folder
-    infoparser.add_argument('--comp', help='comparison folder')
+    infoparser.add_argument('--comp', nargs=1, help='comparison folder')
     # -- possible plot file describing custom commands
     infoparser.add_argument('--extra', help='plot file for custom needs',
                             dest='optional_plot_file')
